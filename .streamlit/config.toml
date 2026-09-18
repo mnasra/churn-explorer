@@ -1,0 +1,8 @@
+# Pinning the theme so the app looks the same on a projector as it does on the
+# laptop, whatever the browser happens to be set to.
+[theme]
+base = "light"
+primaryColor = "#2a78d6"
+
+[server]
+headless = true

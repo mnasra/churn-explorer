@@ -32,11 +32,33 @@ model = Pipeline(
 
 model.fit(X_train, y_train)
 
-auc = roc_auc_score(y_test, model.predict_proba(X_test)[:, 1])
+scores = model.predict_proba(X_test)[:, 1]
+
+auc = roc_auc_score(y_test, scores)
 baseline = roc_auc_score(y_test, X_test["tenure_months"].max() - X_test["tenure_months"])
 
 print(f"Model AUC:    {auc:.3f}")
-print(f"Tenure-only:  {baseline:.3f}   (the baseline worth quoting on a slide)")
+print(f"Tenure-only:  {baseline:.3f}   (the comparison baseline reported in the app)")
 
-joblib.dump({"model": model, "features": FEATURES, "auc": auc, "baseline": baseline}, "model.pkl")
-print("Wrote model.pkl")
+# The reference customer: the median of each numeric field and the mode of each
+# categorical one. The app scores this row so that an individual score can be
+# read against a benchmark rather than standing alone.
+reference = {c: float(X_train[c].median()) for c in NUMERIC}
+reference.update({c: X_train[c].mode()[0] for c in CATEGORICAL})
+
+# The holdout goes into the bundle too. Choosing a threshold is a question
+# about precision and recall, and those can only be read off data the model was
+# not trained on. Scoring the training rows in the app would flatter it.
+joblib.dump(
+    {
+        "model": model,
+        "features": FEATURES,
+        "auc": auc,
+        "baseline": baseline,
+        "reference": reference,
+        "holdout_y": y_test.to_numpy(),
+        "holdout_score": scores,
+    },
+    "model.pkl",
+)
+print(f"Wrote model.pkl ({len(y_test)} holdout rows saved for the threshold tab)")
