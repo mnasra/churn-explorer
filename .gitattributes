@@ -1,0 +1,11 @@
+# Normalise text files to LF in the repository. Git converts to the platform's
+# convention on checkout, so a Windows checkout still gets CRLF locally.
+* text=auto
+
+*.py    text eol=lf
+*.csv   text eol=lf
+*.toml  text eol=lf
+*.txt   text eol=lf
+*.md    text eol=lf
+
+*.pkl   binary
